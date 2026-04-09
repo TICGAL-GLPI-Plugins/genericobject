@@ -899,6 +899,7 @@ class PluginGenericobjectObject extends CommonDBTM
             'entities_id' => 80, 'is_recursive' => 86, 'notepad' => 90,
             'date_creation' => 121
         ];
+        $default_indexes = [];
 
        // Don't use indexes blacklisted by other item types in plugin DataInjection.
         $plugin = new Plugin();
@@ -916,6 +917,25 @@ class PluginGenericobjectObject extends CommonDBTM
         $index   = 3;
 
         $options = \Location::rawSearchOptionsToAdd();
+
+        //We need to get indexes used by Infocom to avoid using the same index for these fields
+        foreach (\Infocom::rawSearchOptionsToAdd() as $option) {
+            if (isset($option['id'])) {
+                $default_indexes[] = $option['id'];
+            }
+        }
+        //We need to get indexes used by NetworkPort to avoid using the same index for these fields
+        foreach (\NetworkPort::rawSearchOptionsToAdd() as $option) {
+            if (isset($option['id'])) {
+                $default_indexes[] = $option['id'];
+            }
+        }
+        //We need to get indexes used by Contracts to avoid using the same index for these fields
+        foreach (\Contract::rawSearchOptionsToAdd() as $option) {
+            if (isset($option['id'])) {
+                $default_indexes[] = $option['id'];
+            }
+        }
 
         $options[] = [
             'id'   => 'common',
@@ -945,7 +965,7 @@ class PluginGenericobjectObject extends CommonDBTM
                 $currentindex = $index_exceptions[$field];
             } else {
                //If this index is reserved, jump to next available one.
-                while (in_array($currentindex, $taken_indexes)) {
+                while (in_array($currentindex, $taken_indexes) || in_array($currentindex, $default_indexes)) {
                     $currentindex++;
                 }
             }
